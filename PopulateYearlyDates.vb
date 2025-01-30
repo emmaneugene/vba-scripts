@@ -3,7 +3,6 @@ Sub PopulateYearlyDates()
     Dim ws As Worksheet
     Dim startDate As Date
     Dim currentDate As Date
-    Dim lastRow As Long
     Dim currentRow As Long
     Dim yearMergeStartRow As Long
     Dim monthMergeStartRow As Long
@@ -23,36 +22,23 @@ Sub PopulateYearlyDates()
         Exit Sub
     End If
 
+    ' Get the starting row from user
+    Dim startRowInput As String
+    startRowInput = InputBox("Enter the starting row number:", "Row Input")
+
+    ' Validate row input
+    If Not IsNumeric(startRowInput) Or CInt(startRowInput) < 1 Then
+        MsgBox "Please enter a valid row number.", vbExclamation
+        Exit Sub
+    End If
+
     Application.ScreenUpdating = False
 
     ' Set start date to January 1st of input year
     startDate = DateSerial(CInt(yearInput), 1, 1)
 
-     lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    If lastRow < 1 Then
-        lastRow = 0
-    Else
-        ' If the last cell is part of a merged range, get the last cell of the merge
-        If ws.Cells(lastRow, "A").MergeCells Then
-            Dim mergedRange As Range
-            Set mergedRange = ws.Cells(lastRow, "A").MergeArea
-            lastRow = mergedRange.Row + mergedRange.Rows.Count - 1
-        End If
-
-        ' Do the same check for column B (months)
-        Dim lastRowB As Long
-        lastRowB = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
-        If ws.Cells(lastRowB, "B").MergeCells Then
-            Set mergedRange = ws.Cells(lastRowB, "B").MergeArea
-            lastRowB = mergedRange.Row + mergedRange.Rows.Count - 1
-        End If
-
-        ' Use the maximum of both columns
-        lastRow = WorksheetFunction.Max(lastRow, lastRowB)
-    End If
-
-    ' Start adding dates in the next row
-    currentRow = lastRow + 1
+    ' Use the user-specified starting row
+    currentRow = CInt(startRowInput)
     yearMergeStartRow = currentRow
     monthMergeStartRow = currentRow
     previousYear = ""
@@ -106,7 +92,7 @@ Sub PopulateYearlyDates()
     End If
 
     ' Format and align with all borders
-    With ws.Range(ws.Cells(lastRow + 1, 1), ws.Cells(currentRow - 1, 4))
+    With ws.Range(ws.Cells(startRowInput, 1), ws.Cells(currentRow - 1, 4))
         ' Clear any existing borders first
         .Borders.LineStyle = xlNone
 
@@ -125,15 +111,14 @@ Sub PopulateYearlyDates()
         End With
     End With
 
-
     ' Set top-left alignment for merged cells
-    With ws.Range(ws.Cells(lastRow + 1, 1), ws.Cells(currentRow - 1, 2))
+    With ws.Range(ws.Cells(startRowInput, 1), ws.Cells(currentRow - 1, 2))
         .HorizontalAlignment = xlLeft
         .VerticalAlignment = xlTop
     End With
 
     ' Center align the day and day abbreviation columns
-    With ws.Range(ws.Cells(lastRow + 1, 3), ws.Cells(currentRow - 1, 4))
+    With ws.Range(ws.Cells(startRowInput, 3), ws.Cells(currentRow - 1, 4))
         .HorizontalAlignment = xlCenter
         .VerticalAlignment = xlCenter
     End With
